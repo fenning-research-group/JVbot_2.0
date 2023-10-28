@@ -1,2 +1,3 @@
-# JVbot_2.0
-New JVbot repository 2023
+# JVBot
+
+documentation will eventually live here :p
