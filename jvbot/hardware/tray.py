@@ -4,12 +4,13 @@ import numpy as np
 from jvbot.hardware.gantry import Gantry
 
 MODULE_DIR = os.path.dirname(__file__)
-TRAY_VERSIONS_DIR = os.path.join(MODULE_DIR, "..", "tray_versions")
+TRAY_VERSIONS_DIR = MODULE_DIR.replace('hardware','tray_versions')
 AVAILABLE_VERSIONS = {
     os.path.splitext(f)[0]: os.path.join(TRAY_VERSIONS_DIR, f)
     for f in os.listdir(TRAY_VERSIONS_DIR)
     if ".yaml" in f
 }
+
 
 
 class Tray:
@@ -151,6 +152,7 @@ class Tray:
         with open(AVAILABLE_VERSIONS[self.version], "r") as f:
             constants = yaml.load(f, Loader=yaml.FullLoader)
             print("In function calibrate, constants:", constants)
+            f.close()
         constants['offset'] = {k:float(v) for k,v in zip(['x', 'y', 'z'], self.offset)}
         print("in function calibrate, constants after loading offset?: \n", constants)
         print(" also here is 'constants[offset]': ",constants['offset'])
