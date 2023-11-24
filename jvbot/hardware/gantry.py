@@ -81,10 +81,10 @@ class Gantry:
         self.write("G90")  # absolute coordinate system
         self.write(
             "M92 X53.0 Y53.0 Z3200.0"
-        )  # feedrate steps/mm, randomly resets to defaults sometimes idk why
+        )  # feedrate steps/mm, randomly resets to defaults sometimes 
         self.write(
             "M201 X250.0 Y250.0 Z10.0"
-        )  # acceleration steps/mm/mm, randomly resets to defaults sometimes idk why
+        )  # acceleration steps/mm/mm, randomly resets to defaults sometimes 
         self.write(
             "M906 X580 Y580 Z25 E1"
         )  # set max stepper RMS currents (mA) per axis. E = extruder, unused to set low
@@ -96,17 +96,14 @@ class Gantry:
         )  # set max speeds, steps/mm. Z is hardcoded, limited by lead screw hardware.
 
     def write(self, msg):
-        #print("We are in selfwrite")
         self._handle.write(f"{msg}\n".encode())
         time.sleep(self.POLLINGDELAY)
         output = []
         while self._handle.in_waiting:
             line = self._handle.readline().decode("utf-8").strip()
             if line != "ok":
-                #print('this is the variable line in write function which is appended to output', line)
                 output.append(line)
             time.sleep(self.POLLINGDELAY)
-        #print('this is the value the variable "output" holds while it is in the write function:', output)
         return output
 
     def _enable_steppers(self):
@@ -119,7 +116,6 @@ class Gantry:
         found_coordinates = False
         while not found_coordinates:
             output = self.write("M114")  # get current position
-            #print('This is the value the variable "output" holds in the update function:',output)
             for line in output:
                 if line.startswith("X:"):
                     x = float(re.findall(r"X:(\S*)", line)[0])
@@ -129,7 +125,6 @@ class Gantry:
                     break
         self.position = [x, y, z]
 
-        #print('This is the value x,y,z have in the update function which is then passed on to position:',x,y,z)
 
     # gantry methods
     def gohome(self):
@@ -226,7 +221,7 @@ class Gantry:
         except:
             pass
         
-        # here it seems to override that x,y,z
+  
         x, y, z = self.premove(x, y, z)  # will error out if invalid move
 
         if (x == self.position[0]) and (y == self.position[1]):

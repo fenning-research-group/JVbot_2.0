@@ -17,17 +17,19 @@ AVAILABLE_VERSIONS = {
     if ".yaml" in f
 }
 
+## Importing files for the individually contributing systems of jvbot
+
 from jvbot.hardware.gantry import Gantry
 from jvbot.hardware.control3 import Control_Keithley 
 from jvbot.hardware.tray import Tray
 
-
+## Defining the class that controls all the systems of the robot
 class Control:
     def __init__(self, area=0.07, savedir="."):
         print('deniz 9/9/22')
         self.area = area  # cm2
         self.pause = 0.05
-        self.control_keithley = Control_Keithley() ## control_keithley class communicates with keithley code
+        self.control_keithley = Control_Keithley() ## control_keithley class communicates with the source meter (keithley 2400) code
         self.gantry = Gantry()
         self.savedir = savedir
 
@@ -71,42 +73,9 @@ class Control:
 
     def scan_cell(self, name, vmin, vmax, direction = 'fwdrev',  vsteps = 50, light = True, preview = True): 
         
+        ## Calls the keithley script to perform jv analysis passing along necessary arguments
         self.control_keithley.jv(name, direction, vmin, vmax)
-        """
-            Conducts a JV scan, previews data, saves file
-            
-            Args:
-                name (string): name of device
-                direction (string): direction -- fwd, rev, fwdrev, or revfwd
-                vmin (float): start voltage for JV sweep (V)
-                xmax (float): end voltage for JV sweep (V)
-                vsteps (int = 50): number of voltage steps between max and min
-                light (boolean = True): boolean to describe status of light
-                preview (boolean = True): boolean to determine if data is plotted
-        """
-        """
-        direction_options = ["forward", "reverse", "both"]
-        if direction not in direction_options:
-            raise ValueError("direction must be one of {}".format(direction_options))
 
-        if direction == "forward":
-            if vmin > vmax:
-                vmin, vmax = vmax, vmin
-            vmeas, i = self.keithley.iv(vmin, vmax, steps)
-            self._save_to_csv(slot, vmeas=vmeas, i=i, direction=direction)
-
-        if direction == "reverse":
-            if vmin < vmax:
-                vmin, vmax = vmax, vmin
-            vmeas, i = self.keithley.iv(vmin, vmax, steps)
-            self._save_to_csv(slot, vmeas=vmeas, i=i, direction=direction)
-
-        if direction == "both":
-            self.scan_cell(slot, vmin, vmax, steps, "reverse")
-            self.scan_cell(slot, vmin, vmax, steps, "forward")
-        """
-
-        
 
     def scan_tray(
         self,
@@ -127,31 +96,32 @@ class Control:
         if slots is None:
             raise ValueError("Either final_slot or slots must be specified!")
         
-        if retry == True:
-            i = 0
-            os.mkdir("retries")
-            os.chdir("retries")
-            jitter_list = [[0,0.5,1],[0.5,0,1],[0,0,2],[0,0.5,2]]
-            j = 0
-            for slot in tqdm(slots, desc="Scanning Tray"):
-                self.gantry.moveto(self.tray(slot)+jitter_list[j])
-                name_jv = "x"+str(self.position_to_number(slot)).zfill(2)+"_P1_S"+str(j+2)
-                i = i+1
-                name = name_jv
-                self.control_keithley.jv(name, direction, vmin, vmax) 
+        ## Upgrade currently in process
+        # if retry == True:
+        #     i = 0
+        #     os.mkdir("retries")
+        #     os.chdir("retries")
+        #     jitter_list = [[0,0.5,1],[0.5,0,1],[0,0,2],[0,0.5,2]]
+        #     j = 0
+        #     for slot in tqdm(slots, desc="Scanning Tray"):
+        #         self.gantry.moveto(self.tray(slot)+jitter_list[j])
+        #         name_jv = "x"+str(self.position_to_number(slot)).zfill(2)+"_P1_S"+str(j+2)
+        #         i = i+1
+        #         name = name_jv
+        #         self.control_keithley.jv(name, direction, vmin, vmax) 
 
-        else:
-            i = 0
-            for slot in tqdm(slots, desc="Scanning Tray"):
-                self.gantry.moveto(self.tray(slot))
-                name_keithley = "x"+str(i+1).zfill(2)+"_P1_S1"
-                i = i+1
-                name = name_keithley
-                self.control_keithley.jv(name, direction, vmin, vmax) 
+        # else:
+        #     i = 0
+        #     for slot in tqdm(slots, desc="Scanning Tray"):
+        #         self.gantry.moveto(self.tray(slot))
+        #         name_keithley = "x"+str(i+1).zfill(2)+"_P1_S1"
+        #         i = i+1
+        #         name = name_keithley
+        #         self.control_keithley.jv(name, direction, vmin, vmax) 
 
         self.gantry.movetoload()
-        self.copy_rename_csv()
-        retry_slots = self.flag_function()
+        # self.copy_rename_csv()
+        # retry_slots = self.flag_function()
         #if retry is not True:
         #    self.scan_tray(tray_version,direction,vmin,vmax,vsteps = 50, slots = retry_slots, retry = True)
 
